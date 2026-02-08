@@ -1,2 +1,2 @@
-# c00lgui-scriot
+# c00lgui-script
 It's for mobile
