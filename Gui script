@@ -1,0 +1,156 @@
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+local player = game.Players.LocalPlayer
+local gui = Instance.new("ScreenGui", player.PlayerGui)
+gui.Name = "c00lgui"
+gui.ResetOnSpawn = false
+
+local main = Instance.new("Frame", gui)
+main.Name = "c00lgui"
+main.Size = UDim2.new(0.5, 0, 0.6, 0)
+main.Position = UDim2.new(0.25, 0, 0.2, 0)
+main.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+main.BorderColor3 = Color3.fromRGB(255, 0, 0)
+main.BorderSizePixel = 2
+main.Active = true
+
+local ratio = Instance.new("UIAspectRatioConstraint", main)
+ratio.AspectRatio = 1.2
+
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1, 0, 0.15, 0)
+title.Text = "c00lgui"
+title.TextColor3 = Color3.fromRGB(255, 0, 0)
+title.BackgroundTransparency = 1
+title.TextScaled = true
+title.Font = Enum.Font.Arcade
+
+local credits = Instance.new("TextLabel", main)
+credits.Size = UDim2.new(1, 0, 0.05, 0)
+credits.Position = UDim2.new(0, 0, 0.12, 0)
+credits.Text = "By Robloxplayer37864"
+credits.TextColor3 = Color3.fromRGB(200, 0, 0)
+credits.BackgroundTransparency = 1
+credits.TextScaled = true
+credits.Font = Enum.Font.SourceSansBold
+
+local scroll = Instance.new("ScrollingFrame", main)
+scroll.Size = UDim2.new(0.9, 0, 0.75, 0)
+scroll.Position = UDim2.new(0.05, 0, 0.22, 0)
+scroll.BackgroundTransparency = 1
+scroll.CanvasSize = UDim2.new(0, 0, 3.5, 0)
+scroll.ScrollBarThickness = 4
+
+local layout = Instance.new("UIListLayout", scroll)
+layout.Padding = UDim.new(0, 8)
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+local dragging, dragStart, startPos
+main.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = main.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+local function createBtn(text, callback)
+    local btn = Instance.new("TextButton", scroll)
+    btn.Size = UDim2.new(0.9, 0, 0, 45)
+    btn.BackgroundColor3 = Color3.fromRGB(20, 0, 0)
+    btn.BorderColor3 = Color3.fromRGB(150, 0, 0)
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 17
+    btn.MouseButton1Click:Connect(function() callback(btn) end)
+    return btn
+end
+
+local states = {noclip = false}
+local noclipConn
+
+createBtn("Noclip: OFF", function(b)
+    states.noclip = not states.noclip
+    b.Text = states.noclip and "Noclip: ON" or "Noclip: OFF"
+    b.TextColor3 = states.noclip and Color3.new(0, 1, 0) or Color3.new(1, 1, 1)
+    if states.noclip then
+        noclipConn = RunService.Stepped:Connect(function()
+            if player.Character then
+                for _, v in pairs(player.Character:GetDescendants()) do
+                    if v:IsA("BasePart") then v.CanCollide = false end
+                end
+            end
+        end)
+    else
+        if noclipConn then noclipConn:Disconnect() end
+    end
+end)
+
+createBtn("WalkSpeed: 100", function()
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        player.Character.Humanoid.WalkSpeed = 100
+    end
+end)
+
+createBtn("JumpPower: 150", function()
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        player.Character.Humanoid.JumpPower = 150
+    end
+end)
+
+createBtn("execute skybox script by Team8x8x8x8", function()
+    loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-c00lkidd-skybox-script-10964"))()
+end)
+
+local announceBox = Instance.new("TextBox", scroll)
+announceBox.Size = UDim2.new(0.9, 0, 0, 40)
+announceBox.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
+announceBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+announceBox.Text = "someone is hacking :)"
+announceBox.Font = Enum.Font.SourceSansItalic
+announceBox.TextSize = 18
+
+createBtn("Announce Message", function()
+    local m = Instance.new("Message", workspace)
+    m.Text = announceBox.Text
+    task.wait(4)
+    m:Destroy()
+end)
+
+local min = false
+local function toggleGui()
+    min = not min
+    scroll.Visible = not min
+    credits.Visible = not min
+    if min then
+        main.Size = UDim2.new(0, 100, 0, 40)
+        title.Text = "OPEN"
+    else
+        main.Size = UDim2.new(0.5, 0, 0.6, 0)
+        title.Text = "c00lgui"
+    end
+end
+
+createBtn("Minimize Menu", toggleGui)
+
+main.InputBegan:Connect(function(input)
+    if min and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+        toggleGui()
+    end
+end)
+
+createBtn("Destroy GUI", function()
+    if noclipConn then noclipConn:Disconnect() end
+    gui:Destroy()
+end)
